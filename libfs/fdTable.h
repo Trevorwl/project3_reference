@@ -35,7 +35,7 @@ struct fdNode{
     char* filename;
 
     /*
-     * The directory number is the index of the file in the directory
+     * The entry index of the file in the directory
      */
     size_t dir_entry_index;
 
@@ -43,7 +43,7 @@ struct fdNode{
     size_t offset;
 
     /*
-     * The first data block index for the file corresponding to this fd
+     * The first data block of the file. Is FAT_EOC if file has no data blocks.
      */
     size_t first_data_block;
 };

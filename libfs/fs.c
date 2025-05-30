@@ -11,22 +11,16 @@
 #include "fs.h"
 
 /*
- * variables needed for part 4
+ * These 3 variables can be assigned in fs_mount
  */
-
-
 bool disk_mounted = false;
 
 struct fdTable* fd_table = NULL;
 
-/*
- * is assigned when disk metadata is read
- */
 size_t root_directory_index = 0;
 
-/*
- * The fd table
- */
+
+
 struct DiskMetadata* diskMetadata = NULL;
 
 bool isValidFileName(const char *filename);
