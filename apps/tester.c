@@ -1,7 +1,5 @@
 #include "fs.h"
-#include "fdTable.h"
-#include "disk.h"
-#include "utilities.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -10,52 +8,63 @@
 
 void do_sequential_writes();
 void do_long_write();
-void erase_files();
+void usage();
 
+/*
+ * usage:
+ *
+ * example1: ./exec/tester.x <command> <diskname>
+ * 
+ * example2: make test args="<command> <diskname>"
+ *
+ * commands: long_write 
+ *           sequential_writes
+ *
+ *
+ *	long write: performs a long write on disk
+ *
+ *	sequential write: performs many writes in sequence
+ */
 int main(int argc, char** argv){
 
-    char* command=argv[1];
+    if(argc != 3){
+	usage();
+	exit(0);
+    }
 
-    fs_mount("disk.fs");
+    char* command = argv[1];
+    char* diskname= argv[2];
+
+    int ret=fs_mount(diskname);
+
+    if(ret==-1){
+	usage();
+	exit(0);
+    }
 
     if(strcmp(command,"long_write")==0){
         do_long_write();
-    }
 
-    if(strcmp(command,"1_to_9999")==0){
+    } else if(strcmp(command,"sequential_writes")==0){
         do_sequential_writes();
-    }
-
-    if(strcmp(command,"erase")==0){
-        erase_files();
+    } else {
+    	usage();
     }
 
     fs_umount();
 }
 
-void erase_files(){
-
-     erase_all_files();
-}
-
-//void test_fat_allocation(){
-//    if(disk_mounted==false){
-//       fs_mount("disk.fs");
-//    }
-//
-//    erase_all_files();
-//
-//
-//}
-
-
-//prints from 1 to 9999
+/*
+ * tests if fs can handle
+ * multiple sequential writes
+ *
+ * pass: numbers are printed in ascending order
+ */
 void do_sequential_writes(){
 
-    fs_delete("1_to_9999");
     fs_create("1_to_9999");
 
-    int fd=fs_open("1_to_9999");
+    int fd = fs_open("1_to_9999");
 
     for(int i=0;i<10000;i++){
         char c[32];
@@ -64,7 +73,6 @@ void do_sequential_writes(){
 
         fs_write(fd,c,strlen(c));
     }
-
 
     fs_lseek(fd,0);
 
@@ -78,13 +86,16 @@ void do_sequential_writes(){
     printf("%s",buf);
     printf("\n");
 
-    struct fdNode* fdNode=getFdEntry(fd_table,fd);
-
-    print_allocated_blocks(fdNode);
-
     fs_close(fd);
+
+    fs_delete("1_to_9999");
 }
 
+/*
+ * tests if fs can do a long write
+ *
+ * pass: numbers printing in ascending order
+ */
 void do_long_write(){
 
      size_t bufLength = 48894;  //bytes required for write
@@ -99,7 +110,6 @@ void do_long_write(){
 
          sprintf(storeNum, "%d\n", i);
 
-         //we will write number and \n without null terminator
          int length = strlen(storeNum);
 
          memcpy(&buf[offset], storeNum, length);
@@ -107,18 +117,40 @@ void do_long_write(){
          offset += length;
      }
 
-      fs_delete("long_write");
       fs_create("long_write");
 
       int fd=fs_open("long_write");
 
       fs_write(fd,buf,bufLength);
 
-      struct fdNode* fdNode=getFdEntry(fd_table,fd);
+      fs_lseek(fd,0);
 
-      hex_dump_file(fdNode);
+      size_t stat=fs_stat(fd);
+      char* buf2=(char*)calloc(1,stat + 1);
 
-      print_allocated_blocks(fdNode);
+      buf2[stat]=0;
+
+      fs_read(fd,buf2,stat);
+
+      printf("%s",buf2);
+      printf("\n");
 
       fs_close(fd);
+
+      fs_delete("long_write");
+}
+
+void usage(){
+    	printf("\n\n------usage: tester.x"
+        
+                        "\n\n\t./exec/tester.x <command> <diskname>"
+
+                        "\n\n--or--"
+
+                        "\n\n\tmake test args=\"<command> <diskname>\""
+
+                        "\n\n------commands:"
+ 
+                        "\n\n\tlong_write\n\tsequential_writes\n\n\n");
+
 }
