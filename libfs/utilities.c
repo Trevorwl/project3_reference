@@ -133,13 +133,17 @@ void print_allocated_blocks(struct fdNode* fd){
 
     printf("Allocated blocks for %s:\n",fd->filename);
 
+    size_t total_blocks=0;
+
     while(current_block!=FAT_EOC){
         printf("%zu ",current_block);
 
         current_block = get_fat_entry(current_block);
+
+        total_blocks++;
     }
 
-    printf("\n");
+    printf("\ntotal blocks: %zu\n",total_blocks);
 }
 
 void hex_dump_file(struct fdNode* fd){
@@ -200,5 +204,40 @@ void hex_dump(void *data, size_t length) {
             printf("|\n");
         }
     }
+}
+
+size_t free_blocks(){
+    if(disk_mounted==false){
+        return 0;
+    }
+
+    if(utilities_buffer==NULL){
+        utilities_buffer = (uint8_t*)calloc(1, bounce_buffer_size);
+    } else {
+        memset(utilities_buffer,0,bounce_buffer_size);
+    }
+
+    size_t free_blocks = 0;
+
+    for(size_t fat_block_index = (size_t)FAT_BLOCK_START_INDEX;
+            fat_block_index < root_directory_index; fat_block_index++){
+
+        block_read(fat_block_index, utilities_buffer);
+
+        uint16_t* fat_entry=(uint16_t*)utilities_buffer;
+
+        for(int entry = 0; entry < FAT_ENTRIES; entry++){
+
+            if(*fat_entry==0){
+                 free_blocks++;
+            }
+
+            fat_entry++;
+        }
+
+        memset(utilities_buffer,0,bounce_buffer_size);
+    }
+
+    return free_blocks;
 }
 

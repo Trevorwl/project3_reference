@@ -11,7 +11,7 @@
 #include "fs.h"
 
 /*
- * These 3 variables can be assigned in fs_mount
+ * These 4 variables can be assigned in fs_mount
  */
 bool disk_mounted = false;
 
@@ -19,7 +19,7 @@ struct fdTable* fd_table = NULL;
 
 size_t root_directory_index = 0;
 
-
+size_t data_blocks=0;
 
 struct DiskMetadata* diskMetadata = NULL;
 
@@ -63,6 +63,8 @@ int fs_mount(const char *diskname)
 
     root_directory_index = diskMetadata->rootDirectoryIndex;
 
+    data_blocks=diskMetadata->totalDataBlocks;
+
     fd_table = fd_table_constructor();
 
     return 0;
@@ -81,7 +83,8 @@ int fs_umount(void)
         fd_table=NULL;
 
         disk_mounted = false;
-        root_directory_index=-1;
+        root_directory_index=0;
+        data_blocks=0;
     }
 
     return close_status;

@@ -34,6 +34,11 @@ extern bool disk_mounted;
 extern size_t root_directory_index;
 
 /*
+ * total data blocks
+ */
+extern size_t data_blocks;
+
+/*
  * The table of file descriptors
  */
 extern struct fdTable* fd_table;

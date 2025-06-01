@@ -18,5 +18,7 @@ void hex_dump(void *data, size_t length);
 
 int create_disk(size_t data_blocks,char* filename);
 
+size_t free_blocks();
+
 
 #endif
