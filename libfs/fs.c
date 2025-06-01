@@ -455,7 +455,7 @@ int fs_write(int fd, void *buf, size_t count)
         total_bytes = total_block_count * (size_t)BLOCK_SIZE;
 
         if(end_offset > total_bytes){
-            printf("we shrunk a file\n");
+
            end_offset = total_bytes;
         }
     }
