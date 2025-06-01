@@ -228,6 +228,13 @@ size_t free_blocks(){
 
         for(int entry = 0; entry < FAT_ENTRIES; entry++){
 
+            size_t data_block_index = (fat_block_index - (size_t)FAT_BLOCK_START_INDEX)
+                           * (size_t)FAT_ENTRIES + (size_t)entry;
+
+            if(data_block_index == data_blocks){
+                break;
+            }
+
             if(*fat_entry==0){
                  free_blocks++;
             }
